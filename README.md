@@ -1,28 +1,28 @@
 # 🌊 ReifyFlow
 
 <div align="center">
-  <img src="https://github.com/ReifyFlow/.github/blob/main/profile/logo.png" width="120" alt="ReifyFlow Logo" />
-
+  <img src="https://avatars.githubusercontent.com/u/248118397?s=400&u=0d029fc7994a08e90c07ae40a4fdb80fc5963073&v=4" width="120" alt="ReifyFlow Logo" />
+  
   <h3>From Eidos to Matter.</h3>
-  <p>**从理念到物质。下一代 AI 原生嵌入式开发基础设施。** </p>
+  <p><b>从理念到物质。下一代 AI 原生嵌入式开发基础设施。</b></p>
 
-  ![License](https://img.shields.io/badge/License-AGPL_v3-blue.svg)[LICENSE](LICENSE)
-  ![Status](https://img.shields.io/badge/Status-MVP_Dev-orange.svg)
-  ![Platform](https://img.shields.io/badge/Platform-STM32-blue.svg)
+  [![License](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+  [![Status](https://img.shields.io/badge/Status-MVP_Dev-orange.svg)]()
+  [![Platform](https://img.shields.io/badge/Platform-STM32-blue.svg)]()
 </div>
 
 ---
 
 ## 📖 项目简介 (Introduction)
 
-**ReifyFlow** 是一个开源的工程化生态系统，致力于打破 **抽象软件逻辑 (Idea)**  与 **物理硬件实现 (Reality)**  之间的鸿沟。
+**ReifyFlow** 是一个开源的工程化生态系统，致力于打破 **抽象软件逻辑 (Idea)** 与 **物理硬件实现 (Reality)** 之间的鸿沟。
 
 传统的嵌入式开发中，代码编辑器、硬件配置工具（CubeMX）、数据手册（PDF）和调试工具是割裂的孤岛。ReifyFlow 通过 **AI Agent**、**标准化协议** 和 **双回环验证**，构建了一套 **AI Native** 的自动化流水线：
 
-1. **意图驱动**：用自然语言描述需求，AI 自动拆解任务。
-2. **软硬解耦**：业务逻辑与底层驱动物理隔离，支持在 PC 端进行纯软件仿真。
-3. **交互验证**：在生成代码前，通过可视化拓扑图确认硬件连接，拒绝黑盒操作。
-4. **自愈闭环**：通过硬件回环日志，自动诊断故障并修正底层配置。
+1.  **意图驱动**：用自然语言描述需求，AI 自动拆解任务。
+2.  **软硬解耦**：业务逻辑与底层驱动物理隔离，支持在 PC 端进行纯软件仿真。
+3.  **交互验证**：在生成代码前，通过可视化拓扑图确认硬件连接，拒绝黑盒操作。
+4.  **自愈闭环**：通过硬件回环日志，自动诊断故障并修正底层配置。
 
 ---
 
@@ -91,7 +91,7 @@ graph TD
 
 ## 🔄 全链路执行流程 (Execution Workflow)
 
-这是一个 **人机协作 (Human-in-the-Loop)**  的过程。AI 负责繁琐的生成工作，人类负责关键节点的决策与确认。
+这是一个 **人机协作 (Human-in-the-Loop)** 的过程。AI 负责繁琐的生成工作，人类负责关键节点的决策与确认。
 
 ```mermaid
 sequenceDiagram
@@ -134,13 +134,13 @@ sequenceDiagram
 
 ReifyFlow 采用微服务化的 **Multi-Repo** 架构，各模块职责分明：
 
-| 仓库名称 | 核心职责                                                              | 技术栈           |
-| :--------- | :---------------------------------------------------------------------- | :----------------- |
-| **[`reify-protocol`](https://github.com/ReifyFlow/reify-protocol)**         | 定义所有组件交互的数据标准（软件定义、硬件映射、日志格式）。**所有开发由此开始。**          | JSON Schema      |
-| **[`reify-core`](https://github.com/ReifyFlow/reify-core)**         | 核心编排引擎。集成 LLM、SVD 解析器、PDF 检索引擎、日志分析器。        | Python (FastAPI) |
-| **[`reify-driver`](https://github.com/ReifyFlow/reify-driver)**         | 通用硬件适配器。屏蔽厂商差异，操作 CubeMX/CMake，调用编译器与下载器。 | Python CLI       |
-| **[`reify-studio`](https://github.com/ReifyFlow/reify-studio)**         | 可视化交互工作台 (VS Code 插件)。提供硬件拓扑图绘制、手册联动阅读。   | TS / React       |
-| **[`reify-chips`](https://github.com/ReifyFlow/reify-chips)**         | 芯片知识库。存放 SVD 寄存器定义、Datasheet 索引映射、代码模板。       | Data             |
+| 仓库名称 | 核心职责 | 技术栈 |
+| :--- | :--- | :--- |
+| **[`reify-protocol`](https://github.com/ReifyFlow/reify-protocol)** | 定义所有组件交互的数据标准（软件定义、硬件映射、日志格式）。**所有开发由此开始。** | JSON Schema |
+| **[`reify-core`](https://github.com/ReifyFlow/reify-core)** | 核心编排引擎。集成 LLM、SVD 解析器、PDF 检索引擎、日志分析器。 | Python (FastAPI) |
+| **[`reify-driver`](https://github.com/ReifyFlow/reify-driver)** | 通用硬件适配器。屏蔽厂商差异，操作 CubeMX/CMake，调用编译器与下载器。 | Python CLI |
+| **[`reify-studio`](https://github.com/ReifyFlow/reify-studio)** | 可视化交互工作台 (VS Code 插件)。提供硬件拓扑图绘制、手册联动阅读。 | TS / React |
+| **[`reify-chips`](https://github.com/ReifyFlow/reify-chips)** | 芯片知识库。存放 SVD 寄存器定义、Datasheet 索引映射、代码模板。 | Data |
 
 ---
 
@@ -186,10 +186,10 @@ Project_Root/
 
 我们定义了 **T-V-E-L** 标准流程，确保每一步都可控：
 
-1. **Translate (翻译)**  : AI 将自然语言需求转化为 **Task Spec** (JSON)。
-2. **Verify (验证)**  : `reify-studio` 渲染出硬件连线图，用户进行**可视化确认**。
-3. **Execute (执行)**  : `reify-driver` 修改底层配置，生成代码并烧录。
-4. **Loopback (回环)**  : 硬件日志回传，AI 进行故障诊断。
+1. **Translate (翻译)** : AI 将自然语言需求转化为 **Task Spec** (JSON)。
+2. **Verify (验证)** : `reify-studio` 渲染出硬件连线图，用户进行**可视化确认**。
+3. **Execute (执行)** : `reify-driver` 修改底层配置，生成代码并烧录。
+4. **Loopback (回环)** : 硬件日志回传，AI 进行故障诊断。
 
 ---
 
