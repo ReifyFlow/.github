@@ -26,65 +26,77 @@
 
 ---
 
-## 🏗️ 系统架构 (System Architecture)
+## 🏗️  系统集成架构图 
 
-ReifyFlow 采用 **三段式漏斗模型**，将开发流程划分为三个独立的阶段。下图展示了数据如何在软件域与硬件域之间流转。
 
 ```mermaid
 graph TD
-    %% ================= 样式定义 =================
-    classDef user fill:#2c3e50,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef brain fill:#e74c3c,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef soft fill:#2980b9,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef hard fill:#e67e22,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef test fill:#27ae60,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef data fill:#7f8c8d,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5,color:#fff;
+    %% ================== 样式定义 ==================
+    classDef ui fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#000;
+    classDef brain fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000;
+    classDef data fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,stroke-dasharray: 5 5,color:#000;
+    classDef tool fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000;
+    classDef ext fill:#cfd8dc,stroke:#37474f,stroke-width:2px,color:#000;
 
-    %% ================= 1. 需求标准化阶段 =================
-    User((用户)):::user <-->|自然语言交互| Analyst[AI 需求分析师]:::brain
-    Analyst -->|生成| Task_Spec(标准任务规格书 JSON):::data
+    %% ================== 1. 前端交互层 ==================
+    UI["🟢 reify-studio<br>(VS Code Extension)"]:::ui
 
-    %% ================= 2. 软件架构域 (Software Domain) =================
-    %% 这一层只关注逻辑，不关注具体芯片
-    subgraph Phase_Software [阶段二：软件架构定义]
+    %% ================== 2. 核心编排层 (Backend) ==================
+    %% 修复：标题使用双引号包裹
+    subgraph Core_Layer ["reify-core (Orchestrator)"]
         direction TB
-        Task_Spec --> Arch_Agent[架构师 Agent]:::brain
-        
-        Arch_Agent -->|1.定义接口| Interfaces[抽象接口 .h]:::soft
-        Arch_Agent -->|2.设计调度| Scheduler[调度器/状态机]:::soft
-        Arch_Agent -->|3.实现逻辑| Biz_Logic[纯业务代码 .c]:::soft
-        
-        %% SIL 软件回环
-        Interfaces & Biz_Logic --> Mock_Gen[Mock 虚拟对象生成]
-        Mock_Gen --> SIL_Runner[PC端 仿真运行器]:::test
-        SIL_Runner -->|逻辑验证结果| Arch_Agent
+        Orchestrator[总线调度器]:::brain
+        Agents[AI Agents]:::brain
+        SIL_Runner[SIL 软件仿真器]:::brain
+        Log_Engine[日志分析引擎]:::brain
     end
 
-    %% ================= 3. 硬件实现域 (Hardware Domain) =================
-    %% 这一层负责将逻辑落地到具体芯片
-    subgraph Phase_Hardware [阶段三：硬件映射与实现]
+    %% 连接 UI 与 Core
+    UI <==>|JSON Protocol / WebSocket| Orchestrator
+
+    %% ================== 3. 数据与协议层 ==================
+    subgraph Data_Layer ["Knowledge Base"]
         direction TB
-        HW_Agent[硬件工程师 Agent]:::brain
-        Task_Spec & Interfaces --> HW_Agent
-        
-        HW_Agent -->|4.查阅手册| KB[(SVD / 手册 / RAG库)]
-        HW_Agent -->|5.生成映射| Pin_Map[引脚/外设映射表]:::data
-        
-        Pin_Map --> CubeMX[CubeMX 配置器]:::hard
-        CubeMX --> HAL[HAL 底层驱动]:::hard
-        
-        HW_Agent --> Adapter_Gen[适配层生成器]:::hard
-        Adapter_Gen -->|连接 HAL 与 接口| Adapter[驱动适配层 .c]:::hard
-        
-        %% HIL 硬件回环
-        HAL & Adapter --> Builder[交叉编译 & 烧录]:::test
-        Builder --> Board[物理硬件板卡]
-        Board -->|串口/RTT 日志| Log_Analyzer[回环诊断器]:::test
-        Log_Analyzer -->|硬件修正建议| HW_Agent
+        Protocol["🟡 reify-protocol<br>(JSON Schemas)"]:::data
+        Chips["🟣 reify-chips<br>(SVD / Meta / Templates)"]:::data
     end
 
-    %% 跨域连接：业务逻辑与构建工具的连接
-    Biz_Logic -.->|编译链接| Builder
+    %% Core 读取数据
+    Orchestrator -.-> Protocol
+    Orchestrator -.-> Chips
+
+    %% ================== 4. 驱动适配层 ==================
+    subgraph Driver_Layer ["reify-driver (Adaptor)"]
+        direction TB
+        IOC_Handler[IOC Text Manipulator]:::tool
+        Build_Runner[Build Runner]:::tool
+    end
+
+    %% Core 指挥 Driver
+    Orchestrator ==>|执行指令| IOC_Handler
+    Orchestrator ==>|执行指令| Build_Runner
+
+    %% ================== 5. 外部工具链 (Vendor Tools) ==================
+    subgraph Vendor_Tools ["STM32 Official Ecosystem"]
+        direction TB
+        CubeMX["STM32CubeMX CLI<br>(Code Generator)"]:::ext
+        CubeCLT["STM32CubeCLT<br>(GCC / GDB / Programmer)"]:::ext
+    end
+
+    %% Driver 调用外部工具
+    IOC_Handler -->|1. 修改| IOC_File(.ioc 文件):::ext
+    IOC_File -->|2. 输入| CubeMX
+    
+    Build_Runner -->|3. 调用| CubeCLT
+
+    %% ================== 6. 物理硬件回环 ==================
+    Hardware["🖥️ Physical Hardware<br>(STM32 PCB)"]:::ext
+    
+    CubeCLT ==>|SWD Download| Hardware
+    Hardware -.->|UART Telemetry| Log_Engine
+
+    %% 这里的闭环：日志回到 Core 进行分析
+    Log_Engine -.->|诊断结果| Orchestrator
 ```
 
 ---
@@ -96,36 +108,87 @@ graph TD
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as 用户
-    participant AI_Analyst as 需求分析 AI
-    participant AI_Arch as 软件架构 AI
-    participant SIL as 软件回环测试 (SIL)
-    participant AI_HW as 硬件实现 AI
-    participant HIL as 硬件回环测试 (HIL)
+    
+    %% ================= 角色定义 =================
+    actor User as 👤 User
+    participant Core as 🔵 reify-core<br>(AI Brain)
+    participant Proto as 🟡 reify-protocol<br>(State/JSON)
+    participant Chips as 🟣 reify-chips<br>(Knowledge)
+    participant Driver as 🟤 reify-driver<br>(Execution)
+    participant ExtTools as ⚙️ ST-Tools<br>(CubeMX/CLT)
+    participant Board as 🖥️ Hardware
 
-    Note over User, AI_Analyst: 步骤 1: 需求定义
-    User->>AI_Analyst: "做一个温控风扇，超过30度转动"
-    AI_Analyst->>AI_Analyst: 拆解任务指标 (采样率, 阈值, 响应时间)
-    AI_Analyst-->>User: 确认任务规格书 (Task Spec)
+    %% ================= Phase 1: 意图与功能定义 =================
+    Note over User, Board: ── Phase 1: Definition (定义意图) ──
+    
+    User->>Core: 1. 自然语言需求<br>"做个温控风扇，低成本"
+    Core->>Core: AI 产品经理分析
+    Core->>Proto: 💾 0_functional_spec.json<br>(Func: Temp_Control, Cost: Low)
 
-    Note over AI_Arch, SIL: 步骤 2: 软件架构 & 调度
-    AI_Arch->>AI_Arch: 生成接口 (I_Temp.h, I_Motor.h)
-    AI_Arch->>AI_Arch: 生成调度策略 (状态机 / RTOS任务)
-    AI_Arch->>AI_Arch: 生成业务逻辑 (app_ctrl.c)
-    AI_Arch->>SIL: 运行 PC 端 Mock 测试 (虚拟温度变化)
-    SIL-->>AI_Arch: 逻辑验证通过 (无死锁，逻辑正确)
+    %% ================= Phase 2: 虚拟架构与约束注入 =================
+    Note over User, Board: ── Phase 2: Virtualization & Constraints (虚拟化与约束) ──
+    
+    Core->>Proto: 读取功能规格
+    Core->>Core: AI 架构师设计
+    Core->>Proto: 💾 1_virtual_system.json<br>(Virtual: ADC, PWM, PID_Algo)
+    
+    %% ★★★ 关键点：硬件选型与约束提取 ★★★
+    Core->>Chips: 🔍 选型 (Match "Low Cost")
+    Chips-->>Core: 选中 STM32F030 (48MHz, No FPU)
+    Core->>Proto: 💾 2_hw_constraints.json<br>(Limit: No Float, Low RAM)
+    
+    %% 约束反向注入软件设计
+    Core->>Core: AI 软件工程师读取约束<br>decision: PID 使用定点数运算
+    Core->>Proto: 💾 3_software_arch.json<br>(Logic: Fixed-Point PID)
+    
+    %% SIL 验证 (软件回环)
+    Core->>Core: 生成 mock_driver.c & app.c
+    Core->>Core: 🧪 运行 SIL 仿真 (PC端)
+    Core->>Proto: ✅ 软件逻辑验证通过
 
-    Note over AI_HW, HIL: 步骤 3: 硬件映射 & 实现
-    AI_HW->>AI_HW: 读取 Task Spec & 接口定义
-    AI_HW->>User: **[可视化交互]** 展示硬件连线图 (ADC1->PA0, PWM->PA8)
-    User->>AI_HW: 确认或修改引脚 (人工介入)
-    AI_HW->>AI_HW: 调用 CubeMX 生成 HAL 驱动
-    AI_HW->>AI_HW: 生成适配层 (Driver_Adapter.c)
-    AI_HW->>HIL: 编译并下载到 STM32
+    %% ================= Phase 3: 物理映射与交互确认 =================
+    Note over User, Board: ── Phase 3: Mapping & Verification (映射与交互) ──
+    
+    Core->>Chips: 读取 SVD/Datasheet
+    Core->>Core: 尝试引脚分配 (Auto-Routing)
+    Core->>Proto: 💾 4_physical_map.json<br>(Map: ADC->PA0, PWM->PA6)
+    
+    %% ★★★ 人机交互点 ★★★
+    Core-->>User: 🎨 发送数据至 reify-studio<br>(渲染拓扑连线图)
+    User->>Core: 🖱️ 确认/拖拽修改引脚
+    Core->>Proto: 🔒 锁定物理映射
 
-    Note over HIL, User: 步骤 4: 最终验证
-    HIL->>HIL: 硬件运行 & 回传日志
-    HIL-->>User: 仪表盘显示：温度 31度，风扇转速 50%
+    %% ================= Phase 4: 落地实现 (CubeMX + CubeCLT) =================
+    Note over User, Board: ── Phase 4: Realization (落地执行) ──
+    
+    %% A. 底层生成
+    Core->>Driver: 调用生成指令
+    Driver->>Proto: 读取 4_physical_map.json
+    
+    Driver->>Driver: 🐍 Python 修改 .ioc 文本<br>(Set PA0=ADC_IN0)
+    Driver->>ExtTools: ⚙️ 调用 CubeMX CLI (-q script)<br>生成 HAL 库代码
+    
+    %% B. 适配层生成
+    Core->>Core: 生成 adapter.c (胶水代码)<br>连接 HAL_ADC_GetValue 与 app_get_temp
+    
+    %% C. 构建与烧录
+    Driver->>ExtTools: 🔨 调用 CubeCLT (GCC) 编译
+    Driver->>ExtTools: ⚡ 调用 CubeCLT (Programmer) 烧录
+    ExtTools->>Board: 写入固件
+
+    %% ================= Phase 5: 物理回环诊断 =================
+    Note over User, Board: ── Phase 5: Loopback Diagnosis (自愈) ──
+    
+    Board->>Driver: 📡 串口回传 Telemetry JSON
+    Driver->>Core: 转发日志
+    Core->>Core: 🩺 AI 诊断逻辑
+    
+    alt 发现异常
+        Core->>Proto: 修改 4_physical_map 或 .ioc
+        Core->>Driver: 🔄 触发重构流程
+    else 运行正常
+        Core-->>User: ✅ 任务完成
+    end
 ```
 
 ---
